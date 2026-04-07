@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const expenseRoutes = require("./routes/expense");
+const userRoutes = require("./routes/user");
 const sequelize = require("./utils/dbConnection");
 const path = require("path");
 
@@ -10,13 +10,14 @@ app.use(express.urlencoded({ extended: true })); //middleware to parse form data
 
 app.use(express.static(path.join(__dirname, "public")));
 
-app.get("/", (req, res) => {
+
+app.get("/signup", (req, res) => {
     res.sendFile(path.join(__dirname, "views", "home.html"));
 });
 
-app.use("/expense", expenseRoutes);
+app.use("/user", userRoutes);
 
-sequelize.sync({force: false})
+sequelize.sync({force: true})
     .then(() => {
         console.log("Database synced");
     })

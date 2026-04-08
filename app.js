@@ -23,9 +23,13 @@ app.get("/login", (req, res) => {
     res.sendFile(path.join(__dirname, "views", "login.html"));
 });
 
+app.get("/expense", (req, res) => {
+    res.sendFile(path.join(__dirname, "views", "expense.html"));
+});
+
 app.use("/user", userRoutes);
 
-sequelize.sync({force: true})
+sequelize.sync({force: false})
     .then(() => {
         console.log("Database synced");
     })

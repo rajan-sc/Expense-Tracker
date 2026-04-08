@@ -12,8 +12,9 @@ async function signup(e) {
     try {
         const res = await axios.post("/user/signup", { name, email, password });
         console.log(res.data);
+        localStorage.setItem('token', res.data.token);
         alert("User created successfully");
-        window.location.href = "/login";
+        window.location.href = "/expense";
     } catch (error) {
         console.log(error);
         alert("User already exists!")

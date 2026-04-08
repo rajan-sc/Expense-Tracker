@@ -1,8 +1,6 @@
 const loginForm = document.getElementById("login-form");
 const errorMsg = document.getElementById("error-msg");
 
-
-
 loginForm.addEventListener("submit", login);
 
 async function login(e) {
@@ -14,7 +12,9 @@ try
     const password = document.getElementById("password").value;
     const response = await axios.post("http://localhost:3000/user/login", {email, password});
     console.log(response.data);
+    localStorage.setItem('token', response.data.token);
     alert("Login successful");
+    window.location.href = "/expense";
     }
 catch(error){
     console.log(error);

@@ -25,7 +25,7 @@ app.get("/login", (req, res) => {
 
 app.use("/user", userRoutes);
 
-sequelize.sync({force: false})
+sequelize.sync({force: true})
     .then(() => {
         console.log("Database synced");
     })

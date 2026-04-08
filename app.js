@@ -11,13 +11,21 @@ app.use(express.urlencoded({ extended: true })); //middleware to parse form data
 app.use(express.static(path.join(__dirname, "public")));
 
 
-app.get("/signup", (req, res) => {
+app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "views", "home.html"));
+});
+
+app.get("/signup", (req, res) => {
+    res.sendFile(path.join(__dirname, "views", "signup.html"));
+});
+
+app.get("/login", (req, res) => {
+    res.sendFile(path.join(__dirname, "views", "login.html"));
 });
 
 app.use("/user", userRoutes);
 
-sequelize.sync({force: true})
+sequelize.sync({force: false})
     .then(() => {
         console.log("Database synced");
     })

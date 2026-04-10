@@ -6,20 +6,24 @@ const User = sequalize.define("User", {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
-        allowNull: false,
+        allowNull: false
     },
     name: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: false
     },
     email: {
         type: DataTypes.STRING,
         unique: true,
-        allowNull: false,
+        allowNull: false
     },
     password: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: false
+    },
+    isPremium: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     }
 });
 

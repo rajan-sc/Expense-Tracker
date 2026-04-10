@@ -3,6 +3,7 @@ const app = express();
 const userRoutes = require("./routes/user");
 const sequelize = require("./utils/dbConnection");
 const path = require("path");
+const paymentRoutes = require("./routes/payment");
 
 app.use(express.json()); //middleware to parse json data
 
@@ -27,7 +28,16 @@ app.get("/expense", (req, res) => {
     res.sendFile(path.join(__dirname, "views", "expense.html"));
 });
 
+app.get("/payment", (req, res) => {
+    res.sendFile(path.join(__dirname, "views", "payment.html"));
+});
+
+app.get("/payment-status/:orderId", (req, res) => {
+    res.sendFile(path.join(__dirname, "views", "status.html"));
+});
+
 app.use("/user", userRoutes);
+app.use("/payment", paymentRoutes);
 
 sequelize.sync({force: false})
     .then(() => {

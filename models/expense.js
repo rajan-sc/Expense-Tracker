@@ -6,7 +6,7 @@ const Expense = sequalize.define("expense", {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-        allowNull: false,
+        allowNull: false
     },
     userId: {
         type: DataTypes.INTEGER,
@@ -18,15 +18,15 @@ const Expense = sequalize.define("expense", {
     },
     amount: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: false
     },
     category: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: false
     },
     description: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: false
     }
 })
 

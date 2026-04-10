@@ -50,4 +50,5 @@ const getUserInfo = async (req, res) => {
     }
 }
 
+
 module.exports = {signup, login, getUserInfo};

@@ -144,7 +144,7 @@ async function checkPremiumStatus() {
         const response = await axios.get("http://localhost:3000/user/me", {
             headers: { "Authorization": token }
         });
-        
+
         if (response.data.isPremium) {
             // Hide the buy button
             premiumBtn.style.display = "none";
@@ -182,7 +182,7 @@ async function leaderBoard(){
         const response = await axios.get("http://localhost:3000/user/expense/leaderboard", {
             headers: { "Authorization": token }
         });
-        
+
         let lbContainer = document.getElementById("leaderboard-container");
         if (!lbContainer) {
             lbContainer = document.createElement("div");
@@ -192,11 +192,11 @@ async function leaderBoard(){
             lbContainer.style.border = "1px solid #ccc";
             document.body.appendChild(lbContainer);
         }
-        
-        lbContainer.innerHTML = "<h3>Leaderboard</h3><ul>" + 
-            response.data.map(user => `<li>Name: ${user.name} - Total Expense: $${user.totalAmount || 0}</li>`).join("") +
+
+        lbContainer.innerHTML = "<h3>Leaderboard</h3><ul>" +
+            response.data.map(user => `<li>Name: ${user.name} - Total Expense: $${user.totalExpense || 0}</li>`).join("") +
             "</ul>";
-            
+
     } catch (error) {
         console.error(error);
         alert("Failed to load leaderboard");

@@ -6,25 +6,10 @@ const leaderBoard = async (req, res) => {
         const users = await User.findAll({
             attributes: [
                 "name",
-                [
-                    sequelize.fn(
-                        "COALESCE",
-                        sequelize.fn("SUM", sequelize.col("expenses.amount")),
-                        0
-                    ),
-                    "totalAmount"
-                ]
+                "totalExpense"
             ],
-            include: [
-                {
-                    model: Expense,
-                    attributes: [],
-                    required: false
-                }
-            ],
-            group: ["User.id"],
             order: [
-                [sequelize.literal("totalAmount"), "DESC"]
+                ["totalExpense", "DESC"]
             ]
         });
 

@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
 const userRoutes = require("./routes/user");
+const expenseRoutes = require("./routes/expense");
+const leaderboardRoutes = require("./routes/leaderboard");
 const sequelize = require("./utils/dbConnection");
 const path = require("path");
 const paymentRoutes = require("./routes/payment");
@@ -37,6 +39,8 @@ app.get("/payment-status/:orderId", (req, res) => {
 });
 
 app.use("/user", userRoutes);
+app.use("/expense", expenseRoutes);
+app.use("/leaderboard", leaderboardRoutes);
 app.use("/payment", paymentRoutes);
 
 sequelize.sync({force: false})

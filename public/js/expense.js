@@ -6,22 +6,41 @@ expenseForm.addEventListener("submit", addExpense);
 window.addEventListener("DOMContentLoaded", () => {
     loadExpenses();
     checkPremiumStatus();
+    getAIInsight();
 });
+
+async function getAIInsight() {
+    try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:3000/expense/insights", {
+            headers: { "Authorization": token }
+        });
+        document.getElementById("ai-insight").textContent = response.data.insight;
+    } catch (error) {
+        console.error("Failed to load AI insight", error);
+        document.getElementById("ai-insight").textContent = "The AI advisor is offline.";
+    }
+}
 
 let editExpenseId = null;
 
 async function addExpense(e) {
+    e.preventDefault();
+    const submitBtn = document.getElementById("addExpense-btn");
+    // preventing the btn click because of async nature of the function causing multiple requests.
+    if(submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Processing...";
+    }
+
     try {
-        e.preventDefault();
         const amount = document.getElementById("amount").value;
         const description = document.getElementById("description").value;
-        const category = document.getElementById("category").value;
         const token = localStorage.getItem("token");
 
         if(editExpenseId){
-            const response = await axios.put(`http://localhost:3000/user/expense/edit-expense/${editExpenseId}`, {
+            const response = await axios.put(`http://localhost:3000/expense/edit-expense/${editExpenseId}`, {
                 amount,
-                category,
                 description
             }, {
                 headers: { "Authorization": token }
@@ -32,32 +51,35 @@ async function addExpense(e) {
             loadExpenses();
             editExpenseId = null;
         }else{
-        const response = await axios.post("http://localhost:3000/user/expense/add-expense",
-             {
-                amount,
-                category,
-                description
-            },
-            {
-                headers: { "Authorization": token }
-            }
-        );
-        console.log(response.data);
-        alert("Expense added successfully");
-        expenseForm.reset();
-        loadExpenses();
-    }
-}
-    catch(error){
+            const response = await axios.post("http://localhost:3000/expense/add-expense",
+                {
+                    amount,
+                    description
+                },
+                {
+                    headers: { "Authorization": token }
+                }
+            );
+            console.log(response.data);
+            alert("Expense added successfully");
+            expenseForm.reset();
+            loadExpenses();
+        }
+    } catch(error){
         console.log(error);
         alert("Failed to add expense");
+    } finally {
+        if(submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Add Expense";
+        }
     }
 }
 
 async function loadExpenses() {
     try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`http://localhost:3000/user/expense/get-expenses`, {
+        const response = await axios.get(`http://localhost:3000/expense/get-expenses`, {
             headers: { "Authorization": token }
         });
         expenseList.innerHTML = "";
@@ -79,7 +101,7 @@ function showExpenseOnScreen(expense) {
     const li = document.createElement("li");
 
     const span = document.createElement("span");
-    span.textContent = ` $ ${expense.amount} - ${expense.category} - ${expense.description}`;
+    span.textContent = ` $ ${expense.amount} - ${expense.category} - ${expense.description} `;
 
     const delBtn = document.createElement("button");
     delBtn.textContent = "Delete";
@@ -99,7 +121,7 @@ function showExpenseOnScreen(expense) {
 async function deleteExpense(expenseId) {
     try {
         const token = localStorage.getItem("token");
-        const response = await axios.delete(`http://localhost:3000/user/expense/delete-expense/${expenseId}`, {
+        const response = await axios.delete(`http://localhost:3000/expense/delete-expense/${expenseId}`, {
             headers: { "Authorization": token }
         });
         console.log(response.data);
@@ -114,7 +136,6 @@ async function deleteExpense(expenseId) {
 
 function editExpense(expense) {
     document.getElementById("amount").value = expense.amount;
-    document.getElementById("category").value = expense.category;
     document.getElementById("description").value = expense.description;
     editExpenseId = expense.id;
     document.getElementById("addExpense-btn").textContent = "Update Expense";
@@ -179,7 +200,7 @@ async function checkPremiumStatus() {
 async function leaderBoard(){
     try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:3000/user/expense/leaderboard", {
+        const response = await axios.get("http://localhost:3000/leaderboard", {
             headers: { "Authorization": token }
         });
 

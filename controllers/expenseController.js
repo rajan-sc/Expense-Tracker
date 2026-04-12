@@ -15,11 +15,11 @@ const addExpense = async (req, res) => {
     const { amount, description } = req.body;
     const aiCategory = await aiService.categorizeExpense(description, amount);
 
-    const t = await sequelize.transaction();
+    const transxn = await sequelize.transaction();
     try {
-        const expense = await Expense.create({ userId: req.user.id, amount, category: aiCategory, description }, { transaction: t });
-        await addTotalExpense(req.user.id, amount, t);
-        await t.commit();
+        const expense = await Expense.create({ userId: req.user.id, amount, category: aiCategory, description }, { transaction: transxn });
+        await addTotalExpense(req.user.id, amount, transxn);
+        await transxn.commit();
         res.status(201).json(expense);
     } catch (error) {
         await t.rollback();
@@ -39,18 +39,18 @@ const getExpensesById = async (req, res) => {
 }
 
 const deleteExpense = async (req, res) => {
-    const t = await sequelize.transaction();
+    const transxn = await sequelize.transaction();
     try {
         const expenseId = req.params.id;
 
         const expense = await Expense.findOne({ where: { id: expenseId, userId: req.user.id } });
         if (!expense) {
-            await t.rollback();
+            await transxn.rollback();
             return res.status(404).json({ message: "Expense not found" });
         }
 
-        await expense.destroy({ transaction: t });
-        await subTotalExpense(req.user.id, expense.amount, t);
+        await expense.destroy({ transaction: transxn });
+        await subTotalExpense(req.user.id, expense.amount, transxn);
 
         await t.commit();
         res.json({ message: "Expense deleted successfully" });
@@ -105,7 +105,7 @@ const getInsights = async (req, res) => {
         }
 
         const simplifiedExpenses = expenses.map(e => ({ amount: e.amount, category: e.category, desc: e.description }));
-        
+
         const insightText = await aiService.generateFinancialInsight(simplifiedExpenses);
 
         res.json({ insight: insightText });

@@ -1,6 +1,7 @@
 const loginForm = document.getElementById("login-form");
 const errorMsg = document.getElementById("error-msg");
 
+
 loginForm.addEventListener("submit", login);
 
 async function login(e) {

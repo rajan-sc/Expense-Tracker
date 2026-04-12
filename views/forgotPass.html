@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password</title>
+</head>
+<body>
+    <h1>Forgot Password</h1>
+    <form id="forgot-password-form">
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" required>
+        <br>
+        <div id="error-msg" style="color: red;"></div>
+        <button type="submit" id="forgot-password-btn">Forgot Password</button>
+    </form>
+    <p><a href="/login">Back to Login</a></p>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/forgotPass.js"></script>
+</body>
+</html>

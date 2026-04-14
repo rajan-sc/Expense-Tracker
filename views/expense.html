@@ -20,6 +20,15 @@
         <p id="ai-insight">Analyzing your expenses...</p>
     </div>
     <h2 id="expheading">Expenses</h2>
+    <div style="margin-top: 10px; margin-bottom: 10px;">
+        <label for="expense-limit">Rows per page: </label>
+        <select id="expense-limit">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+        </select>
+    </div>
     <ul id="expense-list"></ul>
     <div id="pagination-container" style="display: flex; gap: 5px; margin-top: 10px; align-items: center;"></div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>

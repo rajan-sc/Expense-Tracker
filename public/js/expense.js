@@ -7,6 +7,16 @@ window.addEventListener("DOMContentLoaded", () => {
     loadExpenses();
     checkPremiumStatus();
     getAIInsight();
+    
+    const limitSelect = document.getElementById("expense-limit");
+    if (limitSelect) {
+        limitSelect.value = currentLimit;
+        limitSelect.addEventListener("change", (e) => {
+            currentLimit = parseInt(e.target.value);
+            localStorage.setItem("expenseLimit", currentLimit);
+            loadExpenses(1);
+        });
+    }
 });
 
 async function getAIInsight() {
@@ -24,6 +34,7 @@ async function getAIInsight() {
 
 let editExpenseId = null;
 let currentPage = 1;
+let currentLimit = parseInt(localStorage.getItem("expenseLimit")) || 5;
 
 async function addExpense(e) {
     e.preventDefault();
@@ -81,7 +92,7 @@ async function loadExpenses(page = currentPage) {
     currentPage = page;
     try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`http://localhost:3000/expense/get-expenses?page=${page}`, {
+        const response = await axios.get(`http://localhost:3000/expense/get-expenses?page=${page}&limit=${currentLimit}`, {
             headers: { "Authorization": token }
         });
         expenseList.innerHTML = "";
@@ -89,6 +100,9 @@ async function loadExpenses(page = currentPage) {
         const expenses = response.data.expenses || response.data;
         
         if(!expenses || expenses.length === 0){
+            if (page > 1) {
+                return loadExpenses(page - 1);
+            }
             document.getElementById("expheading").textContent = "No expenses found";
             const paginationContainer = document.getElementById("pagination-container");
             if (paginationContainer) paginationContainer.innerHTML = "";

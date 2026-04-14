@@ -31,7 +31,7 @@ const addExpense = async (req, res) => {
 const getExpensesById = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = 5;
+        const limit = parseInt(req.query.limit) || 5;
         const offset = (page - 1) * limit;
 
         const expenses = await Expense.findAndCountAll({
@@ -95,12 +95,12 @@ const editExpense = async (req, res) => {
 
         const difference = Number(amount) - Number(oldExpense.amount);
 
-        await oldExpense.update({ amount, description }, { transaction: t });
+        await oldExpense.update({ amount, description }, { transaction: transxn });
 
         if (difference > 0) {
-            await addTotalExpense(req.user.id, difference, t);
+            await addTotalExpense(req.user.id, difference, transxn);
         } else if (difference < 0) {
-            await subTotalExpense(req.user.id, Math.abs(difference), t);
+            await subTotalExpense(req.user.id, Math.abs(difference), transxn);
         }
 
         await transxn.commit();

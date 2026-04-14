@@ -2,12 +2,12 @@ const { Expense, User } = require("../models/index");
 const sequelize = require("../utils/dbConnection");
 const aiService = require("../services/aiService");
 
-const addTotalExpense = async (userId, amount, t) => {
-    await User.increment("totalExpense", { by: Number(amount), where: { id: userId }, transaction: t });
+const addTotalExpense = async (userId, amount, transxn) => {
+    await User.increment("totalExpense", { by: Number(amount), where: { id: userId }, transaction: transxn });
 };
 
-const subTotalExpense = async (userId, amount, t) => {
-    await User.decrement("totalExpense", { by: Number(amount), where: { id: userId }, transaction: t });
+const subTotalExpense = async (userId, amount, transxn) => {
+    await User.decrement("totalExpense", { by: Number(amount), where: { id: userId }, transaction: transxn });
 };
 
 
@@ -22,7 +22,7 @@ const addExpense = async (req, res) => {
         await transxn.commit();
         res.status(201).json(expense);
     } catch (error) {
-        await t.rollback();
+        await transxn.rollback();
         console.log(error);
         res.status(500).json(error);
     }
@@ -30,8 +30,28 @@ const addExpense = async (req, res) => {
 
 const getExpensesById = async (req, res) => {
     try {
-        const expenses = await Expense.findAll({ where: { userId: req.user.id } });
-        res.status(200).json(expenses);
+        const page = parseInt(req.query.page) || 1;
+        const limit = 5;
+        const offset = (page - 1) * limit;
+
+        const expenses = await Expense.findAndCountAll({
+            where: { userId: req.user.id },
+            offset: offset,
+            limit: limit
+        });
+
+        const totalAmount = await Expense.sum('amount', { where: { userId: req.user.id } }) || 0;
+
+        res.status(200).json({
+            expenses: expenses.rows,
+            totalAmount: totalAmount,
+            currentPage: page,
+            hasNextPage: limit * page < expenses.count,
+            nextPage: page + 1,
+            hasPreviousPage: page > 1,
+            previousPage: page - 1,
+            lastPage: Math.ceil(expenses.count / limit)
+        });
     } catch (error) {
         console.log(error);
         res.status(500).json(error);
@@ -52,24 +72,24 @@ const deleteExpense = async (req, res) => {
         await expense.destroy({ transaction: transxn });
         await subTotalExpense(req.user.id, expense.amount, transxn);
 
-        await t.commit();
+        await transxn.commit();
         res.json({ message: "Expense deleted successfully" });
 
     } catch (error) {
-        await t.rollback();
+        await transxn.rollback();
         res.status(500).json({ message: "Failed to delete expense" });
     }
 };
 
 const editExpense = async (req, res) => {
-    const t = await sequelize.transaction();
+    const transxn = await sequelize.transaction();
     try {
         const expenseId = req.params.id;
         const { amount, description } = req.body;
 
         const oldExpense = await Expense.findOne({ where: { id: expenseId, userId: req.user.id } });
         if (!oldExpense) {
-            await t.rollback();
+            await transxn.rollback();
             return res.status(404).json({ message: "Expense not found" });
         }
 
@@ -83,10 +103,10 @@ const editExpense = async (req, res) => {
             await subTotalExpense(req.user.id, Math.abs(difference), t);
         }
 
-        await t.commit();
+        await transxn.commit();
         res.json({ message: "Expense updated successfully" });
     } catch (error) {
-        await t.rollback();
+        await transxn.rollback();
         res.status(500).json({ message: "Failed to update expense" });
     }
 }

@@ -15,12 +15,13 @@
         <input type="text" id="description" name="description" placeholder="Description" required>
         <button type="submit" id="addExpense-btn">Add Expense</button>
     </form>
-    <h2 id="expheading">Expenses</h2>
     <div id="ai-advisor" style="background-color: #f0f0ff; padding: 10px; border-radius: 8px; margin-bottom: 20px;">
-        <h3>AI Financial Advisor</h3>
+        <h3>Financial Advice:</h3>
         <p id="ai-insight">Analyzing your expenses...</p>
     </div>
+    <h2 id="expheading">Expenses</h2>
     <ul id="expense-list"></ul>
+    <div id="pagination-container" style="display: flex; gap: 5px; margin-top: 10px; align-items: center;"></div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/expense.js"></script>
 </body>

@@ -23,6 +23,7 @@ async function getAIInsight() {
 }
 
 let editExpenseId = null;
+let currentPage = 1;
 
 async function addExpense(e) {
     e.preventDefault();
@@ -76,24 +77,65 @@ async function addExpense(e) {
     }
 }
 
-async function loadExpenses() {
+async function loadExpenses(page = currentPage) {
+    currentPage = page;
     try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`http://localhost:3000/expense/get-expenses`, {
+        const response = await axios.get(`http://localhost:3000/expense/get-expenses?page=${page}`, {
             headers: { "Authorization": token }
         });
         expenseList.innerHTML = "";
-        if(response.data.length === 0){
+        
+        const expenses = response.data.expenses || response.data;
+        
+        if(!expenses || expenses.length === 0){
             document.getElementById("expheading").textContent = "No expenses found";
+            const paginationContainer = document.getElementById("pagination-container");
+            if (paginationContainer) paginationContainer.innerHTML = "";
         } else {
-            let total = response.data.reduce((acc, expense) => acc + expense.amount, 0);
-            document.getElementById("expheading").textContent = `Expenses Total: ${total}`;
-            response.data.forEach(expense => {
+            let totalAmount = response.data.totalAmount !== undefined ? response.data.totalAmount : expenses.reduce((acc, expense) => acc + expense.amount, 0);
+            document.getElementById("expheading").textContent = `Expenses Total: ${totalAmount}`;
+            expenses.forEach(expense => {
                 showExpenseOnScreen(expense);
             });
+            showPagination(response.data);
         }
     } catch (error) {
         console.log(error);
+    }
+}
+
+function showPagination({ currentPage, hasNextPage, nextPage, hasPreviousPage, previousPage, lastPage }) {
+    let paginationContainer = document.getElementById("pagination-container");
+    if (!paginationContainer) {
+        paginationContainer = document.createElement("div");
+        paginationContainer.id = "pagination-container";
+        paginationContainer.style.display = "flex";
+        paginationContainer.style.gap = "5px";
+        paginationContainer.style.marginTop = "10px";
+        paginationContainer.style.alignItems = "center";
+        expenseList.after(paginationContainer);
+    }
+    
+    paginationContainer.innerHTML = "";
+    
+    if (hasPreviousPage) {
+        const btn2 = document.createElement("button");
+        btn2.innerHTML = previousPage;
+        btn2.addEventListener("click", () => loadExpenses(previousPage));
+        paginationContainer.appendChild(btn2);
+    }
+    
+    const btn1 = document.createElement("button");
+    btn1.innerHTML = `<h3>${currentPage}</h3>`;
+    btn1.addEventListener("click", () => loadExpenses(currentPage));
+    paginationContainer.appendChild(btn1);
+    
+    if (hasNextPage) {
+        const btn3 = document.createElement("button");
+        btn3.innerHTML = nextPage;
+        btn3.addEventListener("click", () => loadExpenses(nextPage));
+        paginationContainer.appendChild(btn3);
     }
 }
 

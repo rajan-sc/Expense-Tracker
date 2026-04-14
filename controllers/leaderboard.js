@@ -1,4 +1,4 @@
-const {Expense, User} = require("../models/index");
+const {Expense, User} = require("../models/associations");
 const sequelize = require("../utils/dbConnection");
 
 const leaderBoard = async (req, res) => {

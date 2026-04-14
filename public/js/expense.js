@@ -7,7 +7,7 @@ window.addEventListener("DOMContentLoaded", () => {
     loadExpenses();
     checkPremiumStatus();
     getAIInsight();
-    
+
     const limitSelect = document.getElementById("expense-limit");
     if (limitSelect) {
         limitSelect.value = currentLimit;
@@ -48,12 +48,14 @@ async function addExpense(e) {
     try {
         const amount = document.getElementById("amount").value;
         const description = document.getElementById("description").value;
+        const notes = document.getElementById("notes").value;
         const token = localStorage.getItem("token");
 
         if(editExpenseId){
             const response = await axios.put(`http://localhost:3000/expense/edit-expense/${editExpenseId}`, {
                 amount,
-                description
+                description,
+                notes
             }, {
                 headers: { "Authorization": token }
             });
@@ -66,7 +68,8 @@ async function addExpense(e) {
             const response = await axios.post("http://localhost:3000/expense/add-expense",
                 {
                     amount,
-                    description
+                    description,
+                    notes
                 },
                 {
                     headers: { "Authorization": token }
@@ -96,9 +99,9 @@ async function loadExpenses(page = currentPage) {
             headers: { "Authorization": token }
         });
         expenseList.innerHTML = "";
-        
+
         const expenses = response.data.expenses || response.data;
-        
+
         if(!expenses || expenses.length === 0){
             if (page > 1) {
                 return loadExpenses(page - 1);
@@ -130,21 +133,21 @@ function showPagination({ currentPage, hasNextPage, nextPage, hasPreviousPage, p
         paginationContainer.style.alignItems = "center";
         expenseList.after(paginationContainer);
     }
-    
+
     paginationContainer.innerHTML = "";
-    
+
     if (hasPreviousPage) {
         const btn2 = document.createElement("button");
         btn2.innerHTML = previousPage;
         btn2.addEventListener("click", () => loadExpenses(previousPage));
         paginationContainer.appendChild(btn2);
     }
-    
+
     const btn1 = document.createElement("button");
     btn1.innerHTML = `<h3>${currentPage}</h3>`;
     btn1.addEventListener("click", () => loadExpenses(currentPage));
     paginationContainer.appendChild(btn1);
-    
+
     if (hasNextPage) {
         const btn3 = document.createElement("button");
         btn3.innerHTML = nextPage;
@@ -157,7 +160,8 @@ function showExpenseOnScreen(expense) {
     const li = document.createElement("li");
 
     const span = document.createElement("span");
-    span.textContent = ` $ ${expense.amount} - ${expense.category} - ${expense.description} `;
+    const notesText = expense.notes ? ` (Note: ${expense.notes})` : ""; // was showing null so added this line
+    span.textContent = ` $ ${expense.amount} - ${expense.category} - ${expense.description}${notesText} `;
 
     const delBtn = document.createElement("button");
     delBtn.textContent = "Delete";
@@ -193,6 +197,7 @@ async function deleteExpense(expenseId) {
 function editExpense(expense) {
     document.getElementById("amount").value = expense.amount;
     document.getElementById("description").value = expense.description;
+    document.getElementById("notes").value = expense.notes || "";
     editExpenseId = expense.id;
     document.getElementById("addExpense-btn").textContent = "Update Expense";
 }

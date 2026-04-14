@@ -1,4 +1,4 @@
-const { Expense, User } = require("../models/index");
+const { Expense, User } = require("../models/associations");
 const sequelize = require("../utils/dbConnection");
 const aiService = require("../services/aiService");
 
@@ -12,12 +12,12 @@ const subTotalExpense = async (userId, amount, transxn) => {
 
 
 const addExpense = async (req, res) => {
-    const { amount, description } = req.body;
+    const { amount, description, notes } = req.body;
     const aiCategory = await aiService.categorizeExpense(description, amount);
 
     const transxn = await sequelize.transaction();
     try {
-        const expense = await Expense.create({ userId: req.user.id, amount, category: aiCategory, description }, { transaction: transxn });
+        const expense = await Expense.create({ userId: req.user.id, amount, category: aiCategory, description, notes }, { transaction: transxn });
         await addTotalExpense(req.user.id, amount, transxn);
         await transxn.commit();
         res.status(201).json(expense);
@@ -85,7 +85,7 @@ const editExpense = async (req, res) => {
     const transxn = await sequelize.transaction();
     try {
         const expenseId = req.params.id;
-        const { amount, description } = req.body;
+        const { amount, description, notes } = req.body;
 
         const oldExpense = await Expense.findOne({ where: { id: expenseId, userId: req.user.id } });
         if (!oldExpense) {
@@ -95,7 +95,7 @@ const editExpense = async (req, res) => {
 
         const difference = Number(amount) - Number(oldExpense.amount);
 
-        await oldExpense.update({ amount, description }, { transaction: transxn });
+        await oldExpense.update({ amount, description, notes }, { transaction: transxn });
 
         if (difference > 0) {
             await addTotalExpense(req.user.id, difference, transxn);

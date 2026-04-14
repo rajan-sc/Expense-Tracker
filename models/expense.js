@@ -27,6 +27,10 @@ const Expense = sequalize.define("expense", {
     description: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    notes: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 })
 

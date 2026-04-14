@@ -1,6 +1,5 @@
 const {createOrder, verifyPayment: verifyCashfreePayment} = require("../services/cashfreeservice");
-const {Order} = require("../models/index");
-const {User} = require("../models/index");
+const {Order, User} = require("../models/associations");
 
 const createPaymentOrder = async (req, res) => {
     const orderId = "ORD" + Date.now();

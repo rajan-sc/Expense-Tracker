@@ -1,6 +1,7 @@
-const { Expense, User } = require("../models/associations");
+const { Expense, User, DownloadHistory } = require("../models/associations");
 const sequelize = require("../utils/dbConnection");
 const aiService = require("../services/aiService");
+const s3 = require("../services/awsS3Service");
 
 const addTotalExpense = async (userId, amount, transxn) => {
     await User.increment("totalExpense", { by: Number(amount), where: { id: userId }, transaction: transxn });
@@ -114,6 +115,9 @@ const editExpense = async (req, res) => {
 
 const getInsights = async (req, res) => {
     try {
+        if (!req.user.isPremium) {
+            return res.status(403).json({ insight: "AI Advisor is a premium feature. Upgrade to premium!" });
+        }
         const expenses = await Expense.findAll({
             where: { userId: req.user.id },
             order: [['createdAt', 'DESC']],
@@ -135,5 +139,44 @@ const getInsights = async (req, res) => {
     }
 }
 
-module.exports = { addExpense, getExpensesById, deleteExpense, editExpense, getInsights };
+const downloadExpenses = async (req, res) => {
+    try {
+        if (!req.user.isPremium) {
+            return res.status(403).json({ message: "Download is a premium feature." });
+        }
+        const expenses = await Expense.findAll({ where: { userId: req.user.id } });
+        const stringifiedExpenses = JSON.stringify(expenses);
+        console.log(stringifiedExpenses);
+
+        const fileUrl = await s3.uploadToS3(stringifiedExpenses, `${req.user.id}/expenses_${new Date().toISOString()}.txt`);
+        
+        await DownloadHistory.create({
+            fileUrl: fileUrl,
+            userId: req.user.id
+        });
+        
+        res.status(200).json({ fileUrl });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to download expenses" });
+    }
+}
+
+const getDownloadHistory = async (req, res) => {
+    try {
+        if (!req.user.isPremium) {
+            return res.status(403).json({ message: "Download history is a premium feature." });
+        }
+        const history = await DownloadHistory.findAll({
+            where: { userId: req.user.id },
+            order: [['createdAt', 'DESC']]
+        });
+        res.status(200).json({ history });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Failed to fetch download history" });
+    }
+}
+
+module.exports = { addExpense, getExpensesById, deleteExpense, editExpense, getInsights, downloadExpenses, getDownloadHistory };
 

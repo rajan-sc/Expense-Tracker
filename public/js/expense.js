@@ -6,7 +6,6 @@ expenseForm.addEventListener("submit", addExpense);
 window.addEventListener("DOMContentLoaded", () => {
     loadExpenses();
     checkPremiumStatus();
-    getAIInsight();
 
     const limitSelect = document.getElementById("expense-limit");
     if (limitSelect) {
@@ -28,7 +27,7 @@ async function getAIInsight() {
         document.getElementById("ai-insight").textContent = response.data.insight;
     } catch (error) {
         console.error("Failed to load AI insight", error);
-        document.getElementById("ai-insight").textContent = "The AI advisor is offline.";
+        document.getElementById("ai-insight").textContent = error.response?.data?.insight || "The AI advisor is offline.";
     }
 }
 
@@ -252,6 +251,33 @@ async function checkPremiumStatus() {
             lbBtn.style.cursor = "pointer";
             lbBtn.addEventListener("click", leaderBoard);
             document.body.appendChild(lbBtn);
+
+            // Add the download button
+            const dlBtn = document.createElement("button");
+            dlBtn.textContent = "Download Expense";
+            dlBtn.style.position = "fixed";
+            dlBtn.style.top = "90px";
+            dlBtn.style.right = "20px";
+            dlBtn.style.padding = "10px";
+            dlBtn.style.cursor = "pointer";
+            dlBtn.addEventListener("click", downloadExpenses);
+            document.body.appendChild(dlBtn);
+
+            // Add the show history button
+            const histBtn = document.createElement("button");
+            histBtn.textContent = "Show History";
+            histBtn.style.position = "fixed";
+            histBtn.style.top = "130px";
+            histBtn.style.right = "20px";
+            histBtn.style.padding = "10px";
+            histBtn.style.cursor = "pointer";
+            histBtn.addEventListener("click", showDownloadHistory);
+            document.body.appendChild(histBtn);
+
+            // Also load AI insight if premium
+            getAIInsight();
+        } else {
+            document.getElementById("ai-insight").textContent = "AI Advisor is a premium feature. Upgrade to buy premium!";
         }
     } catch (e) {
         console.error("Failed to fetch premium status:", e);
@@ -282,5 +308,55 @@ async function leaderBoard(){
     } catch (error) {
         console.error(error);
         alert("Failed to load leaderboard");
+    }
+}
+
+async function downloadExpenses() {
+    try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:3000/expense/download", {
+            headers: { "Authorization": token }
+        });
+        if (response.status === 200) {
+            const a = document.createElement("a");
+            a.href = response.data.fileUrl;
+            a.download = "expenses.txt";
+            a.click();
+        }
+    }catch (error) {
+        console.error(error);
+        alert(error.response?.data?.message || "Failed to download expenses");
+    }
+}
+
+async function showDownloadHistory() {
+    try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:3000/expense/download-history", {
+            headers: { "Authorization": token }
+        });
+
+        let historyContainer = document.getElementById("history-container");
+        if (!historyContainer) {
+            historyContainer = document.createElement("div");
+            historyContainer.id = "history-container";
+            historyContainer.style.marginTop = "30px";
+            historyContainer.style.padding = "15px";
+            historyContainer.style.border = "1px solid #ccc";
+            document.body.appendChild(historyContainer);
+        }
+
+        if (response.data.history.length === 0) {
+            historyContainer.innerHTML = "<h3>Download History</h3><p>No downloads yet.</p>";
+            return;
+        }
+
+        historyContainer.innerHTML = "<h3>Download History</h3><ul>" +
+            response.data.history.map(item => `<li>${new Date(item.createdAt).toLocaleString()} - <a href="${item.fileUrl}" target="_blank">Download File</a></li>`).join("") +
+            "</ul>";
+
+    } catch (error) {
+        console.error(error);
+        alert(error.response?.data?.message || "Failed to load download history");
     }
 }

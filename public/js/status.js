@@ -9,7 +9,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        const response = await axios.post("http://localhost:3000/payment/verify-payment", 
+        const response = await axios.post("/payment/verify-payment", 
              { orderId },
              { headers: { "Authorization": token } }
         );

@@ -4,35 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expense Tracker</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+    <div class="container mt-20">
+        <div class="glass-card">
+            <h1>Add new expense!</h1>
+            <form id="expense-form">
+                <div>
+                    <label for="amount">Amount (in dollars):</label>
+                    <input type="number" id="amount" name="amount" placeholder="e.g. 50" required>
+                </div>
+                <div>
+                    <label for="description">Description:</label>
+                    <input type="text" id="description" name="description" placeholder="e.g. Groceries" required>
+                </div>
+                <div>
+                    <label for="notes">Notes:</label>
+                    <input type="text" id="notes" name="notes" placeholder="Notes (optional)">
+                </div>
+                <button type="submit" class="btn-primary" id="addExpense-btn" style="margin-top: 20px;">Add Expense</button>
+            </form>
+        </div>
 
-    <h1>Add new expense!</h1>
-    <form id="expense-form">
-        <label for="amount">Amount:</label>
-        <input type="number" id="amount" name="amount" placeholder="Amount" required>
-        <label for="description">Description:</label>
-        <input type="text" id="description" name="description" placeholder="Description" required>
-        <label for="notes">Notes:</label>
-        <input type="text" id="notes" name="notes" placeholder="Notes (optional)">
-        <button type="submit" id="addExpense-btn">Add Expense</button>
-    </form>
-    <div id="ai-advisor" style="background-color: #f0f0ff; padding: 10px; border-radius: 8px; margin-bottom: 20px;">
-        <h3>Financial Advice:</h3>
-        <p id="ai-insight">Analyzing your expenses...</p>
+        <div id="ai-advisor">
+            <h3>Financial Advice ✨</h3>
+            <p id="ai-insight" style="line-height: 1.5;">Analyzing your expenses...</p>
+        </div>
+
+        <div class="flex-between mb-20" style="margin-top: 30px;">
+            <h2 id="expheading" style="margin-bottom: 0;">Expenses</h2>
+            <div>
+                <label for="expense-limit" style="margin-right: 5px;">Rows:</label>
+                <select id="expense-limit" style="width: auto; padding: 6px 10px;">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
+        </div>
+
+        <ul id="expense-list"></ul>
+        <div id="pagination-container" style="display: flex; gap: 8px; justify-content: center; margin-top: 20px;"></div>
     </div>
-    <h2 id="expheading">Expenses</h2>
-    <div style="margin-top: 10px; margin-bottom: 10px;">
-        <label for="expense-limit">Rows per page: </label>
-        <select id="expense-limit">
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="25">25</option>
-            <option value="50">50</option>
-        </select>
-    </div>
-    <ul id="expense-list"></ul>
-    <div id="pagination-container" style="display: flex; gap: 5px; margin-top: 10px; align-items: center;"></div>
+
+    <div id="floating-widgets" class="floating-widget-container"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/expense.js"></script>
 </body>

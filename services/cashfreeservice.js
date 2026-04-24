@@ -21,7 +21,7 @@ const createOrder = async (orderId, orderAmount, userId, customerName, customerE
             "customer_email": customerEmail || "test@example.com"
         },
         "order_meta": {
-            "return_url": "http://localhost:3000/payment-status/" + orderId
+            "return_url": `${process.env.BASE_URL}/payment-status/` + orderId
         },
         order_expiry_time: expiryTime,
     };

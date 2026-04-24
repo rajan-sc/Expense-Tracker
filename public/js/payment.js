@@ -11,7 +11,7 @@ btn.addEventListener("click", async () => {
             return;
         }
         
-        const response = await axios.post("http://localhost:3000/payment/create-payment-order", {},
+        const response = await axios.post("/payment/create-payment-order", {},
             {
                 headers: { "Authorization": token }
             }

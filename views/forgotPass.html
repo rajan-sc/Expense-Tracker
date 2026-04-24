@@ -4,17 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forgot Password</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <h1>Forgot Password</h1>
-    <form id="forgot-password-form">
-        <label for="email">Email:</label>
-        <input type="text" id="email" name="email" required>
-        <br>
-        <div id="error-msg" style="color: red;"></div>
-        <button type="submit" id="forgot-password-btn">Forgot Password</button>
-    </form>
-    <p><a href="/login">Back to Login</a></p>
+    <div class="container mt-20">
+        <div class="glass-card">
+            <h1 class="text-center">Forgot Password</h1>
+            <p class="text-center mb-20" style="color: var(--text-muted);">Enter your email to receive a password reset link.</p>
+            <form id="forgot-password-form">
+                <div>
+                    <label for="email">Email Address:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div id="error-msg" class="text-center" style="color: var(--danger);"></div>
+                <button type="submit" class="btn-primary" id="forgot-password-btn" style="margin-top: 15px;">Send Reset Link</button>
+            </form>
+            <div class="text-center mt-20">
+                <p><a href="/login">&larr; Back to Login</a></p>
+            </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/forgotPass.js"></script>
 </body>

@@ -4,12 +4,19 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Cashfree Checkout Integration</title>
+        <link rel="stylesheet" href="/css/style.css">
         <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
     </head>
     <body>
-        <div class="row">
-            <p>Click below to open the checkout page in current tab</p>
-            <button id="renderBtn">Proceed to Pay</button>
+        <div class="container mt-20">
+            <div class="glass-card text-center">
+                <h1 style="background: var(--premium-gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Upgrade to Premium</h1>
+                <p class="mb-20" style="color: var(--text-muted);">Click below to securely proceed to checkout and unlock AI Advisor along with historical downloads.</p>
+                <div class="row">
+                    <button id="renderBtn" class="btn-premium">Proceed to Pay</button>
+                    <button type="button" class="btn-secondary" style="margin-top: 15px; width: 100%; border-color: rgba(255,255,255,0.1);" onclick="window.location.href='/expense'">Cancel</button>
+                </div>
+            </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script src="/js/payment.js" defer></script>

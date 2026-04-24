@@ -4,23 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <h1>Login</h1>
-    <form id="login-form">
-        <label for="email">Email:</label>
-        <input type="text" id="email" name="email" required>
-        <br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <br>
-        <input type="button" value="Forgot Password?" id="forgot-password-btn" onclick="window.location.href='/forgot-password'">
-        <br>
-        <div id="error-msg" style="color: red;"></div>
-        <button type="submit" id="login-btn">Login</button>
-    </form>
-    <p>Don't have an account? <a href="/signup">Signup</a></p>
-    <p><a href="/">Back to Home</a></p>
+    <div class="container mt-20">
+        <div class="glass-card">
+            <h1 class="text-center">Login</h1>
+            <form id="login-form">
+                <div>
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div id="error-msg" class="text-center" style="color: var(--danger);"></div>
+                <div class="text-center">
+                    <button type="submit" class="btn-primary" id="login-btn">Login</button>
+                    <button type="button" class="btn-secondary" style="margin-top: 10px; width: 100%; border-color: rgba(255,255,255,0.1);" id="forgot-password-btn" onclick="window.location.href='/forgot-password'">Forgot Password?</button>
+                </div>
+            </form>
+            <div class="text-center mt-20">
+                <p style="color: var(--text-muted);">Don't have an account? <a href="/signup">Signup</a></p>
+                <p style="margin-top: 10px;"><a href="/">&larr; Back to Home</a></p>
+            </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/login.js"></script>
 </body>

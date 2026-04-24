@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Status</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body style="font-family: Arial, sans-serif; text-align: center; padding-top: 50px;">
-    <div id="status-container">
-        <h1 id="status-title">Verifying Payment...</h1>
-        <p id="status-message">Please wait while we confirm your transaction.</p>
-        <br>
-        <button id="home-btn" style="display:none; margin: 0 auto; padding: 10px 20px; cursor: pointer;" onclick="window.location.href='/expense'">Back to Dashboard</button>
+<body>
+    <div class="container mt-20">
+        <div class="glass-card text-center" id="status-container">
+            <h1 id="status-title">Verifying Payment...</h1>
+            <p id="status-message" class="mb-20" style="color: var(--text-muted);">Please wait while we confirm your transaction.</p>
+            <button id="home-btn" class="btn-primary" style="display:none;" onclick="window.location.href='/expense'">Back to Dashboard</button>
+        </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>

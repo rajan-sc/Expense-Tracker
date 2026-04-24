@@ -21,7 +21,7 @@ window.addEventListener("DOMContentLoaded", () => {
 async function getAIInsight() {
     try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:3000/expense/insights", {
+        const response = await axios.get("/expense/insights", {
             headers: { "Authorization": token }
         });
         document.getElementById("ai-insight").textContent = response.data.insight;
@@ -51,7 +51,7 @@ async function addExpense(e) {
         const token = localStorage.getItem("token");
 
         if(editExpenseId){
-            const response = await axios.put(`http://localhost:3000/expense/edit-expense/${editExpenseId}`, {
+            const response = await axios.put(`/expense/edit-expense/${editExpenseId}`, {
                 amount,
                 description,
                 notes
@@ -64,7 +64,7 @@ async function addExpense(e) {
             loadExpenses();
             editExpenseId = null;
         }else{
-            const response = await axios.post("http://localhost:3000/expense/add-expense",
+            const response = await axios.post("/expense/add-expense",
                 {
                     amount,
                     description,
@@ -94,7 +94,7 @@ async function loadExpenses(page = currentPage) {
     currentPage = page;
     try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`http://localhost:3000/expense/get-expenses?page=${page}&limit=${currentLimit}`, {
+        const response = await axios.get(`/expense/get-expenses?page=${page}&limit=${currentLimit}`, {
             headers: { "Authorization": token }
         });
         expenseList.innerHTML = "";
@@ -137,18 +137,22 @@ function showPagination({ currentPage, hasNextPage, nextPage, hasPreviousPage, p
 
     if (hasPreviousPage) {
         const btn2 = document.createElement("button");
+        btn2.className = "btn btn-secondary btn-sm";
         btn2.innerHTML = previousPage;
         btn2.addEventListener("click", () => loadExpenses(previousPage));
         paginationContainer.appendChild(btn2);
     }
 
     const btn1 = document.createElement("button");
-    btn1.innerHTML = `<h3>${currentPage}</h3>`;
+    btn1.className = "btn btn-primary btn-sm";
+    btn1.style.margin = "0"; // prevent margin-top from primary class
+    btn1.innerHTML = currentPage;
     btn1.addEventListener("click", () => loadExpenses(currentPage));
     paginationContainer.appendChild(btn1);
 
     if (hasNextPage) {
         const btn3 = document.createElement("button");
+        btn3.className = "btn btn-secondary btn-sm";
         btn3.innerHTML = nextPage;
         btn3.addEventListener("click", () => loadExpenses(nextPage));
         paginationContainer.appendChild(btn3);
@@ -158,21 +162,38 @@ function showPagination({ currentPage, hasNextPage, nextPage, hasPreviousPage, p
 function showExpenseOnScreen(expense) {
     const li = document.createElement("li");
 
-    const span = document.createElement("span");
-    const notesText = expense.notes ? ` (Note: ${expense.notes})` : ""; // was showing null so added this line
-    span.textContent = ` $ ${expense.amount} - ${expense.category} - ${expense.description}${notesText} `;
+    const infoDiv = document.createElement("div");
+    infoDiv.className = "expense-info";
+    
+    const amountSpan = document.createElement("span");
+    amountSpan.className = "expense-amount";
+    amountSpan.textContent = `$${expense.amount} `;
+    
+    const notesText = expense.notes ? ` (Note: ${expense.notes})` : ""; 
+    const detailSpan = document.createElement("span");
+    detailSpan.textContent = `- ${expense.category} - ${expense.description}${notesText}`;
 
-    const delBtn = document.createElement("button");
-    delBtn.textContent = "Delete";
-    delBtn.onclick = () => deleteExpense(expense.id);
+    infoDiv.appendChild(amountSpan);
+    infoDiv.appendChild(detailSpan);
+
+    const actionsDiv = document.createElement("div");
+    actionsDiv.className = "expense-actions";
 
     const editBtn = document.createElement("button");
+    editBtn.className = "btn btn-secondary btn-sm";
     editBtn.textContent = "Edit";
     editBtn.onclick = () => editExpense(expense);
 
-    li.appendChild(span);
-    li.appendChild(delBtn);
-    li.appendChild(editBtn);
+    const delBtn = document.createElement("button");
+    delBtn.className = "btn btn-danger btn-sm";
+    delBtn.textContent = "Delete";
+    delBtn.onclick = () => deleteExpense(expense.id);
+
+    actionsDiv.appendChild(editBtn);
+    actionsDiv.appendChild(delBtn);
+
+    li.appendChild(infoDiv);
+    li.appendChild(actionsDiv);
 
     expenseList.appendChild(li);
 }
@@ -180,7 +201,7 @@ function showExpenseOnScreen(expense) {
 async function deleteExpense(expenseId) {
     try {
         const token = localStorage.getItem("token");
-        const response = await axios.delete(`http://localhost:3000/expense/delete-expense/${expenseId}`, {
+        const response = await axios.delete(`/expense/delete-expense/${expenseId}`, {
             headers: { "Authorization": token }
         });
         console.log(response.data);
@@ -201,80 +222,52 @@ function editExpense(expense) {
     document.getElementById("addExpense-btn").textContent = "Update Expense";
 }
 
+const widgetsContainer = document.getElementById("floating-widgets");
+
 const premiumBtn = document.createElement("button");
-premiumBtn.textContent = "Buy Premium";
-
-premiumBtn.style.position = "fixed";
-premiumBtn.style.top = "20px";
-premiumBtn.style.right = "20px";
-premiumBtn.style.padding = "10px";
-premiumBtn.style.backgroundColor = "gold";
-premiumBtn.style.border = "none";
-premiumBtn.style.cursor = "pointer";
-
-document.body.appendChild(premiumBtn);
-
+premiumBtn.className = "btn btn-premium";
+premiumBtn.textContent = "Upgrade to Premium ✨";
 premiumBtn.addEventListener("click", () => {
     window.location.href = "/payment";
 });
-
+if(widgetsContainer) widgetsContainer.appendChild(premiumBtn);
 
 async function checkPremiumStatus() {
     try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:3000/user/me", {
+        const response = await axios.get("/user/me", {
             headers: { "Authorization": token }
         });
 
         if (response.data.isPremium) {
-            // Hide the buy button
             premiumBtn.style.display = "none";
 
-            // Add the premium status text
             const premiumMsg = document.createElement("p");
-            premiumMsg.textContent = "You are a premium user";
-            premiumMsg.style.position = "fixed";
-            premiumMsg.style.top = "20px";
-            premiumMsg.style.right = "20px";
-            premiumMsg.style.margin = "0";
-            premiumMsg.style.color = "gold";
-            premiumMsg.style.fontWeight = "bold";
-            document.body.appendChild(premiumMsg);
+            premiumMsg.className = "premium-text";
+            premiumMsg.textContent = "👑 Premium User";
 
-            // Add the leaderboard button
             const lbBtn = document.createElement("button");
-            lbBtn.textContent = "Show Leaderboard";
-            lbBtn.style.position = "fixed";
-            lbBtn.style.top = "50px";
-            lbBtn.style.right = "20px";
-            lbBtn.style.padding = "10px";
-            lbBtn.style.cursor = "pointer";
+            lbBtn.className = "btn btn-primary btn-sm";
+            lbBtn.textContent = "Leaderboard";
             lbBtn.addEventListener("click", leaderBoard);
-            document.body.appendChild(lbBtn);
 
-            // Add the download button
             const dlBtn = document.createElement("button");
-            dlBtn.textContent = "Download Expense";
-            dlBtn.style.position = "fixed";
-            dlBtn.style.top = "90px";
-            dlBtn.style.right = "20px";
-            dlBtn.style.padding = "10px";
-            dlBtn.style.cursor = "pointer";
+            dlBtn.className = "btn btn-secondary btn-sm";
+            dlBtn.textContent = "Download Data";
             dlBtn.addEventListener("click", downloadExpenses);
-            document.body.appendChild(dlBtn);
 
-            // Add the show history button
             const histBtn = document.createElement("button");
+            histBtn.className = "btn btn-secondary btn-sm";
             histBtn.textContent = "Show History";
-            histBtn.style.position = "fixed";
-            histBtn.style.top = "130px";
-            histBtn.style.right = "20px";
-            histBtn.style.padding = "10px";
-            histBtn.style.cursor = "pointer";
             histBtn.addEventListener("click", showDownloadHistory);
-            document.body.appendChild(histBtn);
+            
+            if(widgetsContainer) {
+                widgetsContainer.appendChild(premiumMsg);
+                widgetsContainer.appendChild(lbBtn);
+                widgetsContainer.appendChild(dlBtn);
+                widgetsContainer.appendChild(histBtn);
+            }
 
-            // Also load AI insight if premium
             getAIInsight();
         } else {
             document.getElementById("ai-insight").textContent = "AI Advisor is a premium feature. Upgrade to buy premium!";
@@ -287,7 +280,7 @@ async function checkPremiumStatus() {
 async function leaderBoard(){
     try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:3000/leaderboard", {
+        const response = await axios.get("/leaderboard", {
             headers: { "Authorization": token }
         });
 
@@ -314,7 +307,7 @@ async function leaderBoard(){
 async function downloadExpenses() {
     try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:3000/expense/download", {
+        const response = await axios.get("/expense/download", {
             headers: { "Authorization": token }
         });
         if (response.status === 200) {
@@ -332,7 +325,7 @@ async function downloadExpenses() {
 async function showDownloadHistory() {
     try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:3000/expense/download-history", {
+        const response = await axios.get("/expense/download-history", {
             headers: { "Authorization": token }
         });
 

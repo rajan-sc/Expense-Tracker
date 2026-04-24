@@ -5,7 +5,7 @@ const sendEmail = async function (recipientEmail, recipientName, forgotPasswordR
         apiKey: process.env.BREVO_API_KEY,
     });
     await client.transactionalEmails.sendTransacEmail({
-        textContent: `Password Reset Link: http://localhost:3000/password/reset-password/${forgotPasswordRequestId}`,
+        textContent: `Password Reset Link: ${process.env.BASE_URL}/password/reset-password/${forgotPasswordRequestId}`,
         sender: {
             email: process.env.BREVO_SENDER_EMAIL,
             name: "ExpensAI",

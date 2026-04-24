@@ -4,15 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reset Password</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <h1>Reset Password</h1>
-    <form id="reset-password-form">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password">
-        <button type="submit">Reset Password</button>
-    </form>
-    <p id="error-msg"></p>
+    <div class="container mt-20">
+        <div class="glass-card">
+            <h1 class="text-center">Reset Password</h1>
+            <p class="text-center mb-20" style="color: var(--text-muted);">Please enter your new password below.</p>
+            <form id="reset-password-form">
+                <div>
+                    <label for="password">New Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div id="error-msg" class="text-center" style="color: var(--danger);"></div>
+                <button type="submit" class="btn-primary" style="margin-top: 15px;">Update Password</button>
+            </form>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/resetPass.js"></script>
 </body>

@@ -1,4 +1,7 @@
+require("dotenv").config();
 const express = require("express");
+const morgan = require("morgan");
+const fs = require("fs");
 const app = express();
 const userRoutes = require("./routes/user");
 const expenseRoutes = require("./routes/expense");
@@ -11,6 +14,9 @@ const forgotPassRoutes = require("./routes/forgotPassword");
 app.use(express.json()); //middleware to parse json data
 
 app.use(express.urlencoded({ extended: true })); //middleware to parse form data
+
+const accessLogStream = fs.createWriteStream(path.join(__dirname, "access.log"), { flags: "a" });
+app.use(morgan("combined", { stream: accessLogStream }));
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -61,6 +67,6 @@ sequelize.sync({force: false})
         console.log(error);
     });
 
-app.listen(3000, () => {
-    console.log("Server is running on port 3000");
+app.listen(process.env.PORT || 3000, () => {
+    console.log(`Server is running on port ${process.env.PORT || 3000}`);
 });

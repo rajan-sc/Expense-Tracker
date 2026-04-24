@@ -13,7 +13,7 @@ async function forgotPassword(e) {
         }
         e.preventDefault();
         const email = document.getElementById("email").value;
-        const response = await axios.post("http://localhost:3000/password/forgot-password", {email});
+        const response = await axios.post("/password/forgot-password", {email});
         errorMsg.textContent = response.data.message;
     }
     catch(error){

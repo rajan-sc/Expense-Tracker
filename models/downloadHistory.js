@@ -1,25 +1,16 @@
-const {DataTypes} = require("sequelize");
-const sequelize = require("../utils/dbConnection");
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-const DownloadHistory = sequelize.define("downloadHistory", {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-        allowNull: false
-    },
+const downloadHistorySchema = new Schema({
     fileUrl: {
-        type: DataTypes.STRING,
-        allowNull: false
+        type: String,
+        required: true
     },
     userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: "Users",
-            key: "id"
-        }
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true
     }
-});
+}, { timestamps: true });
 
-module.exports = DownloadHistory;
+module.exports = mongoose.model("DownloadHistory", downloadHistorySchema);

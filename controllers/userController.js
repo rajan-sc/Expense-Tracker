@@ -1,4 +1,4 @@
-const { User } = require("../models/associations");
+const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -12,7 +12,7 @@ const signup = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         const user = await User.create({ name, email, password: hashedPassword });
-        res.status(201).json({ message: "User created successfully", token: generateAccessToken(user.id) });
+        res.status(201).json({ message: "User created successfully", token: generateAccessToken(user._id) });
     } catch (error) {
         console.log(error);
         res.status(500).json(error);
@@ -22,7 +22,7 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
     const { email, password } = req.body;
     try {
-        const user = await User.findOne({ where: { email } });
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -30,7 +30,7 @@ const login = async (req, res) => {
         if (!isPasswordValid) {
             return res.status(401).json({ message: "Invalid password" });
         }
-        res.status(200).json({ message: "Login successful", token: generateAccessToken(user.id) });
+        res.status(200).json({ message: "Login successful", token: generateAccessToken(user._id) });
     } catch (error) {
         console.log(error);
         res.status(500).json(error);
@@ -39,7 +39,7 @@ const login = async (req, res) => {
 
 const getUserInfo = async (req, res) => {
     try {
-        const user = await User.findByPk(req.user.id);
+        const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -49,6 +49,5 @@ const getUserInfo = async (req, res) => {
         res.status(500).json(error);
     }
 }
-
 
 module.exports = { signup, login, getUserInfo };

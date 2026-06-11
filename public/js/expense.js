@@ -4,6 +4,11 @@ const expenseList = document.getElementById("expense-list");
 expenseForm.addEventListener("submit", addExpense);
 
 window.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        return;
+    }
     loadExpenses();
     checkPremiumStatus();
 

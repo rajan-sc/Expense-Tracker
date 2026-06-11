@@ -1,29 +1,40 @@
-const { Expense, User, DownloadHistory } = require("../models/associations");
-const sequelize = require("../utils/dbConnection");
+const Expense = require("../models/expense");
+const User = require("../models/user");
+const DownloadHistory = require("../models/downloadHistory");
+const mongoose = require("mongoose");
 const aiService = require("../services/aiService");
 const s3 = require("../services/awsS3Service");
 
-const addTotalExpense = async (userId, amount, transxn) => {
-    await User.increment("totalExpense", { by: Number(amount), where: { id: userId }, transaction: transxn });
+const addTotalExpense = async (userId, amount) => {
+    await User.updateOne(
+        { _id: userId },
+        { $inc: { totalExpense: Number(amount) } }
+    );
 };
 
-const subTotalExpense = async (userId, amount, transxn) => {
-    await User.decrement("totalExpense", { by: Number(amount), where: { id: userId }, transaction: transxn });
+const subTotalExpense = async (userId, amount) => {
+    await User.updateOne(
+        { _id: userId },
+        { $inc: { totalExpense: -Number(amount) } }
+    );
 };
-
 
 const addExpense = async (req, res) => {
     const { amount, description, notes } = req.body;
     const aiCategory = await aiService.categorizeExpense(description, amount);
 
-    const transxn = await sequelize.transaction();
     try {
-        const expense = await Expense.create({ userId: req.user.id, amount, category: aiCategory, description, notes }, { transaction: transxn });
-        await addTotalExpense(req.user.id, amount, transxn);
-        await transxn.commit();
+        const expense = new Expense({
+            userId: req.user.id,
+            amount,
+            category: aiCategory,
+            description,
+            notes
+        });
+        await expense.save();
+        await addTotalExpense(req.user.id, amount);
         res.status(201).json(expense);
     } catch (error) {
-        await transxn.rollback();
         console.log(error);
         res.status(500).json(error);
     }
@@ -33,25 +44,29 @@ const getExpensesById = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;
-        const offset = (page - 1) * limit;
+        const skip = (page - 1) * limit;
 
-        const expenses = await Expense.findAndCountAll({
-            where: { userId: req.user.id },
-            offset: offset,
-            limit: limit
-        });
+        const expenses = await Expense.find({ userId: req.user.id })
+            .skip(skip)
+            .limit(limit);
+        
+        const count = await Expense.countDocuments({ userId: req.user.id });
 
-        const totalAmount = await Expense.sum('amount', { where: { userId: req.user.id } }) || 0;
+        const aggregationResult = await Expense.aggregate([
+            { $match: { userId: new mongoose.Types.ObjectId(req.user.id) } },
+            { $group: { _id: null, totalAmount: { $sum: "$amount" } } }
+        ]);
+        const totalAmount = aggregationResult.length > 0 ? aggregationResult[0].totalAmount : 0;
 
         res.status(200).json({
-            expenses: expenses.rows,
+            expenses: expenses,
             totalAmount: totalAmount,
             currentPage: page,
-            hasNextPage: limit * page < expenses.count,
+            hasNextPage: limit * page < count,
             nextPage: page + 1,
             hasPreviousPage: page > 1,
             previousPage: page - 1,
-            lastPage: Math.ceil(expenses.count / limit)
+            lastPage: Math.ceil(count / limit)
         });
     } catch (error) {
         console.log(error);
@@ -60,69 +75,60 @@ const getExpensesById = async (req, res) => {
 }
 
 const deleteExpense = async (req, res) => {
-    const transxn = await sequelize.transaction();
     try {
         const expenseId = req.params.id;
 
-        const expense = await Expense.findOne({ where: { id: expenseId, userId: req.user.id } });
+        const expense = await Expense.findOne({ _id: expenseId, userId: req.user.id });
         if (!expense) {
-            await transxn.rollback();
             return res.status(404).json({ message: "Expense not found" });
         }
 
-        await expense.destroy({ transaction: transxn });
-        await subTotalExpense(req.user.id, expense.amount, transxn);
+        await Expense.deleteOne({ _id: expenseId });
+        await subTotalExpense(req.user.id, expense.amount);
 
-        await transxn.commit();
         res.json({ message: "Expense deleted successfully" });
-
     } catch (error) {
-        await transxn.rollback();
         res.status(500).json({ message: "Failed to delete expense" });
     }
 };
 
 const editExpense = async (req, res) => {
-    const transxn = await sequelize.transaction();
     try {
         const expenseId = req.params.id;
         const { amount, description, notes } = req.body;
 
-        const oldExpense = await Expense.findOne({ where: { id: expenseId, userId: req.user.id } });
+        const oldExpense = await Expense.findOne({ _id: expenseId, userId: req.user.id });
         if (!oldExpense) {
-            await transxn.rollback();
             return res.status(404).json({ message: "Expense not found" });
         }
 
         const difference = Number(amount) - Number(oldExpense.amount);
 
-        await oldExpense.update({ amount, description, notes }, { transaction: transxn });
+        oldExpense.amount = amount;
+        oldExpense.description = description;
+        oldExpense.notes = notes;
+        await oldExpense.save();
 
         if (difference > 0) {
-            await addTotalExpense(req.user.id, difference, transxn);
+            await addTotalExpense(req.user.id, difference);
         } else if (difference < 0) {
-            await subTotalExpense(req.user.id, Math.abs(difference), transxn);
+            await subTotalExpense(req.user.id, Math.abs(difference));
         }
 
-        await transxn.commit();
         res.json({ message: "Expense updated successfully" });
     } catch (error) {
-        await transxn.rollback();
         res.status(500).json({ message: "Failed to update expense" });
     }
 }
-
 
 const getInsights = async (req, res) => {
     try {
         if (!req.user.isPremium) {
             return res.status(403).json({ insight: "AI Advisor is a premium feature. Upgrade to premium!" });
         }
-        const expenses = await Expense.findAll({
-            where: { userId: req.user.id },
-            order: [['createdAt', 'DESC']],
-            limit: 20
-        });
+        const expenses = await Expense.find({ userId: req.user.id })
+            .sort({ createdAt: -1 })
+            .limit(20);
 
         if (expenses.length === 0) {
             return res.json({ insight: "You haven't tracked any expenses yet! Start tracking to get AI financial advice." });
@@ -144,7 +150,7 @@ const downloadExpenses = async (req, res) => {
         if (!req.user.isPremium) {
             return res.status(403).json({ message: "Download is a premium feature." });
         }
-        const expenses = await Expense.findAll({ where: { userId: req.user.id } });
+        const expenses = await Expense.find({ userId: req.user.id });
         const stringifiedExpenses = JSON.stringify(expenses);
         console.log(stringifiedExpenses);
 
@@ -167,11 +173,19 @@ const getDownloadHistory = async (req, res) => {
         if (!req.user.isPremium) {
             return res.status(403).json({ message: "Download history is a premium feature." });
         }
-        const history = await DownloadHistory.findAll({
-            where: { userId: req.user.id },
-            order: [['createdAt', 'DESC']]
+        const history = await DownloadHistory.find({ userId: req.user.id })
+            .sort({ _id: -1 });
+            
+        // Map over the results to ensure createdAt is present for older records
+        const formattedHistory = history.map(doc => {
+            const obj = doc.toObject();
+            if (!obj.createdAt) {
+                obj.createdAt = doc._id.getTimestamp();
+            }
+            return obj;
         });
-        res.status(200).json({ history });
+            
+        res.status(200).json({ history: formattedHistory });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Failed to fetch download history" });
@@ -179,4 +193,3 @@ const getDownloadHistory = async (req, res) => {
 }
 
 module.exports = { addExpense, getExpensesById, deleteExpense, editExpense, getInsights, downloadExpenses, getDownloadHistory };
-

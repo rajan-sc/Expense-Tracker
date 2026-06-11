@@ -1,36 +1,32 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../utils/dbConnection");
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-const Order = sequelize.define("Order", {
-    id: {
-        type: DataTypes.STRING,
-        primaryKey: true,
-        allowNull: false
+const orderSchema = new Schema({
+    _id: {
+        type: String,
+        required: true
     },
     amount: {
-        type: DataTypes.INTEGER,
-        allowNull: false
+        type: Number,
+        required: true
     },
     currency: {
-        type: DataTypes.STRING,
-        defaultValue: "INR"
+        type: String,
+        default: "INR"
     },
     status: {
-        type: DataTypes.STRING,
-        defaultValue: "PENDING" 
+        type: String,
+        default: "PENDING"
     },
     paymentSessionId: {
-        type: DataTypes.STRING,
-        allowNull: true
+        type: String,
+        required: false
     },
     userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: "Users",
-            key: "id"
-        }
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true
     }
 });
 
-module.exports = Order;
+module.exports = mongoose.model("Order", orderSchema);

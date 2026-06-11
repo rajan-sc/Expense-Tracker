@@ -1,17 +1,8 @@
-const {Expense, User} = require("../models/associations");
-const sequelize = require("../utils/dbConnection");
+const User = require("../models/user");
 
 const leaderBoard = async (req, res) => {
     try {
-        const users = await User.findAll({
-            attributes: [
-                "name",
-                "totalExpense"
-            ],
-            order: [
-                ["totalExpense", "DESC"]
-            ]
-        });
+        const users = await User.find({}, "name totalExpense").sort({ totalExpense: -1 });
 
         res.status(200).json(users);
     } catch (error) {
@@ -20,4 +11,4 @@ const leaderBoard = async (req, res) => {
     }
 }
 
-module.exports = {leaderBoard};
+module.exports = { leaderBoard };

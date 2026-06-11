@@ -6,17 +6,15 @@ const app = express();
 const userRoutes = require("./routes/user");
 const expenseRoutes = require("./routes/expense");
 const leaderboardRoutes = require("./routes/leaderboard");
-const sequelize = require("./utils/dbConnection");
+const connectDB = require("./utils/dbConnection");
 const path = require("path");
 const paymentRoutes = require("./routes/payment");
 const forgotPassRoutes = require("./routes/forgotPassword");
 
-app.use(express.json()); //middleware to parse json data
+app.use(express.json());
 
-app.use(express.urlencoded({ extended: true })); //middleware to parse form data
+app.use(express.urlencoded({ extended: true }));
 
-const accessLogStream = fs.createWriteStream(path.join(__dirname, "access.log"), { flags: "a" });
-app.use(morgan("combined", { stream: accessLogStream }));
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -59,13 +57,7 @@ app.use("/leaderboard", leaderboardRoutes);
 app.use("/payment", paymentRoutes);
 app.use("/password", forgotPassRoutes);
 
-sequelize.sync({force: false})
-    .then(() => {
-        console.log("Database synced");
-    })
-    .catch((error) => {
-        console.log(error);
-    });
+connectDB();
 
 app.listen(process.env.PORT || 3000, () => {
     console.log(`Server is running on port ${process.env.PORT || 3000}`);

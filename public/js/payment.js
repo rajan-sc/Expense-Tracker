@@ -2,6 +2,13 @@ const cashfree = Cashfree({
     mode: "sandbox",
 });
 
+window.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+    }
+});
+
 const btn = document.getElementById("renderBtn");
 btn.addEventListener("click", async () => {
     try {

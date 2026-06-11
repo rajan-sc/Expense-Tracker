@@ -4,8 +4,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         const token = localStorage.getItem("token");
         
         if (!token) {
-            document.getElementById("status-title").textContent = "Error";
-            document.getElementById("status-message").textContent = "You must be logged in to verify payments.";
+            window.location.href = "/login";
             return;
         }
 

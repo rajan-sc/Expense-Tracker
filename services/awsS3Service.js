@@ -10,7 +10,7 @@ const uploadToS3 = async (data, filename) => {
         Bucket: process.env.AWS_BUCKET_NAME,
         Key: filename,
         Body: data,
-        ACL: "public-read"
+        ACL: "public-read" 
     };
 
     return new Promise((resolve, reject) => {

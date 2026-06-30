@@ -19,12 +19,9 @@
     "cashfree-pg": "^5.1.0",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
-    "install": "^0.13.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.3",
     "morgan": "^1.10.1",
-    "npm": "^11.12.1",
-    "sequelize-cli": "^6.6.5",
     "uuid": "^13.0.0"
   }
 }

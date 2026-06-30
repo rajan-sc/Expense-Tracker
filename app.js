@@ -1,7 +1,6 @@
 require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan");
-const fs = require("fs");
 const app = express();
 const userRoutes = require("./routes/user");
 const expenseRoutes = require("./routes/expense");
@@ -10,6 +9,8 @@ const connectDB = require("./utils/dbConnection");
 const path = require("path");
 const paymentRoutes = require("./routes/payment");
 const forgotPassRoutes = require("./routes/forgotPassword");
+
+app.use(morgan("dev"));
 
 app.use(express.json());
 
